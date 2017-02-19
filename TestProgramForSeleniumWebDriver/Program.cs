@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Net;
     using OfficeOpenXml;
     using OpenQA.Selenium;
     using OpenQA.Selenium.Chrome;
@@ -13,7 +14,7 @@
     {
         public static void Main()
         {
-            string keyWord = "Automation";//"QA";//"Czech";//"Чешки";
+            string keyWord = "Чешки";//"Automation";//"Чешки";//"QA";//"Czech";////
             int category = 0;//0=allCategories;15=SW
             string pathStr = Utils.CreateNameFromDateTimeNow(keyWord + "_results.txt");
             string pathStr2 = Utils.CreateNameFromDateTimeNow(keyWord + "_results2.txt");
@@ -30,7 +31,7 @@
             //}
             ExcelPackage package = new ExcelPackage(newFile);
 
-            ////TODO Save splittedResultsLabel in a different directory than "bin/debug"
+            ////TODO Save results in a different directory than "bin/debug"
             //StreamWriter writer = new StreamWriter(@"\..\" + pathStr);
             StreamWriter writer = new StreamWriter(pathStr);
             StreamWriter writer2 = new StreamWriter(pathStr2);
@@ -40,6 +41,15 @@
             {
                 // add a new worksheet to the empty workbook
                 ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(excellSheetName);
+
+                //using (WebClient client = new WebClient()) // WebClient class inherits IDisposable
+                //{
+                //    // Or you can get the file content without saving it:
+                //    string htmlCode = client.DownloadString("http://www.yahoo.com");
+                //    System.IO.File.WriteAllText(@"C:\Users\Ryan\Desktop\test.txt", htmlCode);
+                //    //...
+                //}
+
 
                 using (writer)
                 {
@@ -94,11 +104,13 @@
                             var currentPageRowsCollection = driver.FindElements(By.ClassName("offerslistRow"));
                             var currentPageJobLinksCollection = driver.FindElements(By.ClassName("joblink"));
                             var currentPageCompanyLinksCollection = driver.FindElements(By.ClassName("company_link"));
+                            var currentPageOffersDatesCollection = driver.FindElements(By.ClassName("explainGray"));
 
                             var textsCollection = new List<string>();
                             var linksCollection = new List<string>();
                             var titlesCollection = new List<string>();
                             var companyTitlesCollection = new List<string>();
+                            var datesCollection = new List<string>();
 
                             foreach (var row in currentPageRowsCollection)
                             {
@@ -115,6 +127,12 @@
                             {
                                 companyTitlesCollection.Add(item.Text);
                             }
+
+                            foreach (var item in currentPageOffersDatesCollection)
+                            {
+                                datesCollection.Add(item.Text);
+                            }
+
 
                             //Collection of the number of looks on each annoucement
                             var offers = new List<Announcement>();
@@ -135,12 +153,14 @@
                                 var a = titlesCollection[m];
                                 var b = companyTitlesCollection[m];
                                 var e = linksCollection[m];
+                                var f = datesCollection[m];
 
                                 var announcement = new Announcement();
 
                                 announcement.CompanyName = a;
                                 announcement.CompanyOffer = b;
                                 announcement.OfferLink = e;
+                                announcement.Date = f;
 
                                 //Showing the offer contents
                                 currentPageJobLinksCollection = driver.FindElements(By.ClassName("joblink"));
@@ -148,7 +168,7 @@
 
                                 try
                                 {
-                                    driver.FindElement(By.Id("cnt_box")).Text.Split(' ');
+                                    driver.FindElement(By.Id("cnt_box"));
                                 }
                                 catch (Exception)
                                 {
@@ -157,23 +177,29 @@
 
                                 var offerLooks = driver.FindElement(By.Id("cnt_box")).Text.Split(':');
                                 announcement.OfferLooks = offerLooks[offerLooks.Length - 1];
+                               // var fullOfferText = driver.FindElement(By.TagName("body")).Text;
+                                var fullOfferText = driver.FindElement(By.XPath("/html/body/table[2]/tbody/tr/td/table/tbody")).Text;
+                                
 
                                 offers.Add(announcement);
                                 driver.Url = (resultURL);
 
                                 ////TODO better typing
-                                writer2.WriteLine(String.Format("{0} | {1} | {2} | {3}",
-                                                           announcement.CompanyOffer,
-                                                           announcement.CompanyName,
-                                                           announcement.OfferLooks,
-                                                           announcement.OfferLink
-                                                           ));
+                                writer2.WriteLine(String.Format("{0} | {1} | {2} | {3} | {4}",
+                                    announcement.Date,
+                                    announcement.CompanyOffer,
+                                    announcement.CompanyName,
+                                    announcement.OfferLooks,
+                                    announcement.OfferLink
+                                    ));
 
                                 ////Filling Excel cells
-                                worksheet.Cells["A" + excelRow].Value = announcement.CompanyOffer;
-                                worksheet.Cells["B" + excelRow].Value = announcement.CompanyName;
-                                worksheet.Cells["C" + excelRow].Value = int.Parse(announcement.OfferLooks.Replace(" ", String.Empty));//announcement.OfferLooks;//
-                                worksheet.Cells["D" + excelRow].Value = announcement.OfferLink;
+                                worksheet.Cells["A" + excelRow].Value = announcement.Date;
+                                worksheet.Cells["B" + excelRow].Value = announcement.CompanyOffer;
+                                worksheet.Cells["C" + excelRow].Value = announcement.CompanyName;
+                                worksheet.Cells["D" + excelRow].Value = int.Parse(announcement.OfferLooks.Replace(" ", String.Empty));//announcement.OfferLooks;//
+                                worksheet.Cells["E" + excelRow].Value = announcement.OfferLink;
+                                worksheet.Cells["F" + excelRow].Value = fullOfferText;
 
                                 excelRow++;
                             }

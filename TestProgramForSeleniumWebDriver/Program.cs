@@ -14,7 +14,7 @@
     {
         public static void Main()
         {
-            string keyWord = "Чешки";//"Automation";//"Чешки";//"QA";//"Czech";////
+            string keyWord = "Test Automation";//"Чешки";//"QA";//"Czech";////
             int category = 0;//0=allCategories;15=SW
             string pathStr = Utils.CreateNameFromDateTimeNow(keyWord + "_results.txt");
             string pathStr2 = Utils.CreateNameFromDateTimeNow(keyWord + "_results2.txt");
@@ -57,7 +57,7 @@
                     {
                         IWebDriver driver = new ChromeDriver(); //new FirefoxDriver(); // new PhantomJSDriver();//
                         driver.Manage().Window.Maximize();
-                        driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(30));
+                        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
 
                         ////Whole Category "IT - Sowtware"; Keyword is String.Empty, Category is 15
                         driver.Url = ComposeURLInJobsbg("", 15, 0);
@@ -197,7 +197,7 @@
                                 worksheet.Cells["A" + excelRow].Value = announcement.Date;
                                 worksheet.Cells["B" + excelRow].Value = announcement.CompanyOffer;
                                 worksheet.Cells["C" + excelRow].Value = announcement.CompanyName;
-                                worksheet.Cells["D" + excelRow].Value = int.Parse(announcement.OfferLooks.Replace(" ", String.Empty));//announcement.OfferLooks;//
+                                worksheet.Cells["D" + excelRow].Value = announcement.OfferLooks;//int.Parse(announcement.OfferLooks.Replace(" ", String.Empty));//
                                 worksheet.Cells["E" + excelRow].Value = announcement.OfferLink;
                                 worksheet.Cells["F" + excelRow].Value = fullOfferText;
 

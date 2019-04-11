@@ -20,8 +20,7 @@ namespace Utils
             var minutesStr = MakeDoubleDigitString(minutes);
             var secondsStr = MakeDoubleDigitString(seconds);
 
-            var pathStr = year + "_" + monthStr + "_" + dayStr + "_" + hourStr + "_" +
-                minutesStr + "_" + secondsStr + "_" + endOfName;
+            var pathStr = year + monthStr + dayStr + "_" + hourStr + minutesStr + secondsStr + "_" + endOfName;
 
             return pathStr;
         }

@@ -3,3 +3,9 @@ D:\Exercises\TestProgramForSeleniumWebDriver\Utils\bin\Debug\Utils.pdb
 D:\Exercises\TestProgramForSeleniumWebDriver\Utils\obj\Debug\Utils.csprojResolveAssemblyReference.cache
 D:\Exercises\TestProgramForSeleniumWebDriver\Utils\obj\Debug\Utils.dll
 D:\Exercises\TestProgramForSeleniumWebDriver\Utils\obj\Debug\Utils.pdb
+D:\Repositories\Utils\bin\Debug\Utils.dll
+D:\Repositories\Utils\bin\Debug\Utils.pdb
+D:\Repositories\Utils\obj\Debug\Utils.csprojAssemblyReference.cache
+D:\Repositories\Utils\obj\Debug\Utils.csproj.CoreCompileInputs.cache
+D:\Repositories\Utils\obj\Debug\Utils.dll
+D:\Repositories\Utils\obj\Debug\Utils.pdb

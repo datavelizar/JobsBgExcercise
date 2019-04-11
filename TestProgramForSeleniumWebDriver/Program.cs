@@ -14,6 +14,7 @@
     {
         public static void Main()
         {
+
             string keyWord = "Test Automation";//"Чешки";//"QA";//"Czech";////
             int category = 0;//0=allCategories;15=SW
             string pathStr = Utils.CreateNameFromDateTimeNow(keyWord + "_results.txt");

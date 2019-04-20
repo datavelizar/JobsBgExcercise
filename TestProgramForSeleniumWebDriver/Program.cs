@@ -14,11 +14,11 @@
     {
         public static void Main()
         {
-            string keyWord = "Test Automation";//"Чешки";//"QA";//"Czech";////
+            string keyWord = "Czech";//"Test Automation";//"Чешки";//"QA";//
             int category = 0;//0=allCategories;15=SW
             string pathStr = Utils.CreateNameFromDateTimeNow(keyWord + "_results.txt");
             string pathStr2 = Utils.CreateNameFromDateTimeNow(keyWord + "_results2.txt");
-            string pathStr3 = "results3.xlsx";
+            string pathStr3 = Utils.CreateNameFromDateTimeNow(keyWord + "_results3.xlsx"); //For writing in different sheets of the same excel file should pass only "results3.xlsx";
             string excellSheetName = Utils.CreateNameFromDateTimeNow(keyWord);
 
             FileInfo newFile = new FileInfo(pathStr3);
@@ -32,9 +32,10 @@
             ExcelPackage package = new ExcelPackage(newFile);
 
             ////TODO Save results in a different directory than "bin/debug"
-            //StreamWriter writer = new StreamWriter(@"\..\" + pathStr);
-            StreamWriter writer = new StreamWriter(pathStr);
-            StreamWriter writer2 = new StreamWriter(pathStr2);
+            StreamWriter writer = new StreamWriter(@"..\..\" + pathStr);
+            StreamWriter writer2 = new StreamWriter(@"..\..\" + pathStr);
+            //StreamWriter writer = new StreamWriter(pathStr);
+            //StreamWriter writer2 = new StreamWriter(pathStr2);
             //StreamWriter writer3 = new StreamWriter(pathStr3);
 
             using (package)
@@ -177,9 +178,9 @@
 
                                 var offerLooks = driver.FindElement(By.Id("cnt_box")).Text.Split(':');
                                 announcement.OfferLooks = offerLooks[offerLooks.Length - 1];
-                               // var fullOfferText = driver.FindElement(By.TagName("body")).Text;
+                                // var fullOfferText = driver.FindElement(By.TagName("body")).Text;
                                 var fullOfferText = driver.FindElement(By.XPath("/html/body/table[2]/tbody/tr/td/table/tbody")).Text;
-                                
+
 
                                 offers.Add(announcement);
                                 driver.Url = (resultURL);

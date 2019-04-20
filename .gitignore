@@ -5,6 +5,7 @@
 
 # My add-in
 /Debug/geckodriver.exe
+*results*.txt
 
 # User-specific files
 *.rsuser

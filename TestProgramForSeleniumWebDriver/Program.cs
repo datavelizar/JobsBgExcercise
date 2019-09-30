@@ -14,14 +14,14 @@
     {
         public static void Main()
         {
-            string keyWord = "Czech";//"Test Automation";//"Чешки";//"QA";//
+            string keyWord = "Test Automation";//"Чешки";//"QA";//"Czech";//
             int category = 0;//0=allCategories;15=SW
             string pathStr = Utils.CreateNameFromDateTimeNow(keyWord + "_results.txt");
             string pathStr2 = Utils.CreateNameFromDateTimeNow(keyWord + "_results2.txt");
             string pathStr3 = Utils.CreateNameFromDateTimeNow(keyWord + "_results3.xlsx"); //For writing in different sheets of the same excel file should pass only "results3.xlsx";
             string excellSheetName = Utils.CreateNameFromDateTimeNow(keyWord);
 
-            FileInfo newFile = new FileInfo(pathStr3);
+            FileInfo newFile = new FileInfo(@"..\..\" + pathStr3);
 
             //if (newFile.Exists)
             //{
@@ -31,9 +31,9 @@
             //}
             ExcelPackage package = new ExcelPackage(newFile);
 
-            ////TODO Save results in a different directory than "bin/debug"
+            ////TODO Save results in a different directory then "bin/debug"
             StreamWriter writer = new StreamWriter(@"..\..\" + pathStr);
-            StreamWriter writer2 = new StreamWriter(@"..\..\" + pathStr);
+            StreamWriter writer2 = new StreamWriter(@"..\..\" + pathStr2);
             //StreamWriter writer = new StreamWriter(pathStr);
             //StreamWriter writer2 = new StreamWriter(pathStr2);
             //StreamWriter writer3 = new StreamWriter(pathStr3);

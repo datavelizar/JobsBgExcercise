@@ -14,51 +14,27 @@
     {
         public static void Main()
         {
-            string keyWord = "Test Automation";//"Чешки";//"QA";//"Czech";//
+            string keyWord = "Чешки";//"QA";//"Czech";//"Test Automation";
             int category = 0;//0=allCategories;15=SW
             string pathStr = Utils.CreateNameFromDateTimeNow(keyWord + "_results.txt");
             string pathStr2 = Utils.CreateNameFromDateTimeNow(keyWord + "_results2.txt");
             string pathStr3 = Utils.CreateNameFromDateTimeNow(keyWord + "_results3.xlsx"); //For writing in different sheets of the same excel file should pass only "results3.xlsx";
             string excellSheetName = Utils.CreateNameFromDateTimeNow(keyWord);
 
-            FileInfo newFile = new FileInfo(@"..\..\" + pathStr3);
-
-            //if (newFile.Exists)
-            //{
-            //    newFile.Delete();
-            //    //// ensures we create a new workbook 
-            //    newFile = new FileInfo(pathStr3);
-            //}
-            ExcelPackage package = new ExcelPackage(newFile);
-
-            ////TODO Save results in a different directory then "bin/debug"
-            StreamWriter writer = new StreamWriter(@"..\..\" + pathStr);
-            StreamWriter writer2 = new StreamWriter(@"..\..\" + pathStr2);
-            //StreamWriter writer = new StreamWriter(pathStr);
-            //StreamWriter writer2 = new StreamWriter(pathStr2);
-            //StreamWriter writer3 = new StreamWriter(pathStr3);
+            StreamWriter writer = new StreamWriter(@"..\..\Results\" + pathStr);
+            StreamWriter writer2 = new StreamWriter(@"..\..\Results\" + pathStr2);
+            ExcelPackage package = new ExcelPackage(new FileInfo(@"..\..\Results\" + pathStr3));
 
             using (package)
             {
                 // add a new worksheet to the empty workbook
                 ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(excellSheetName);
 
-                //using (WebClient client = new WebClient()) // WebClient class inherits IDisposable
-                //{
-                //    // Or you can get the file content without saving it:
-                //    string htmlCode = client.DownloadString("http://www.yahoo.com");
-                //    System.IO.File.WriteAllText(@"C:\Users\Ryan\Desktop\test.txt", htmlCode);
-                //    //...
-                //}
-
-
                 using (writer)
                 {
                     using (writer2)
                     {
-                        IWebDriver driver = new ChromeDriver(); //new FirefoxDriver(); // new PhantomJSDriver();//
-                        driver.Manage().Window.Maximize();
-                        driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
+                        IWebDriver driver = StartBrowser();
 
                         ////Whole Category "IT - Sowtware"; Keyword is String.Empty, Category is 15
                         driver.Url = ComposeURLInJobsbg("", 15, 0);
@@ -112,7 +88,8 @@
                             var titlesCollection = new List<string>();
                             var companyTitlesCollection = new List<string>();
                             var datesCollection = new List<string>();
-
+                            
+                            // TODO refactor to method that receives collection as parameter
                             foreach (var row in currentPageRowsCollection)
                             {
                                 textsCollection.Add(row.Text);
@@ -134,7 +111,6 @@
                                 datesCollection.Add(item.Text);
                             }
 
-
                             //Collection of the number of looks on each annoucement
                             var offers = new List<Announcement>();
 
@@ -151,17 +127,12 @@
                                     driver.Navigate().Refresh();
                                 }
 
-                                var a = titlesCollection[m];
-                                var b = companyTitlesCollection[m];
-                                var e = linksCollection[m];
-                                var f = datesCollection[m];
-
                                 var announcement = new Announcement();
 
-                                announcement.CompanyName = a;
-                                announcement.CompanyOffer = b;
-                                announcement.OfferLink = e;
-                                announcement.Date = f;
+                                announcement.CompanyName = titlesCollection[m];
+                                announcement.CompanyOffer = companyTitlesCollection[m];
+                                announcement.OfferLink = linksCollection[m];
+                                announcement.Date = datesCollection[m];
 
                                 //Showing the offer contents
                                 currentPageJobLinksCollection = driver.FindElements(By.ClassName("joblink"));
@@ -180,7 +151,6 @@
                                 announcement.OfferLooks = offerLooks[offerLooks.Length - 1];
                                 // var fullOfferText = driver.FindElement(By.TagName("body")).Text;
                                 var fullOfferText = driver.FindElement(By.XPath("/html/body/table[2]/tbody/tr/td/table/tbody")).Text;
-
 
                                 offers.Add(announcement);
                                 driver.Url = (resultURL);
@@ -298,6 +268,14 @@
                     }
                 }
             }
+        }
+
+        private static IWebDriver StartBrowser()
+        {
+            IWebDriver driver = new ChromeDriver(); //new FirefoxDriver(); // new PhantomJSDriver();//
+            driver.Manage().Window.Maximize();
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
+            return driver;
         }
 
         private static string ComposeURLInJobsbg(string keyWord, int categoryNumber, int startingPage)

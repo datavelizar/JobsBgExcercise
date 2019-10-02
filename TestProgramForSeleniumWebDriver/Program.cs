@@ -14,25 +14,25 @@
     {
         public static void Main()
         {
-            string keyWord = "Чешки";//"QA";//"Czech";//"Test Automation";
+            string keyWord = ".NET Test Automation";//"Czech";//"Test Automation";//"Чешки";//"QA";//
             int category = 0;//0=allCategories;15=SW
-            string pathStr = Utils.CreateNameFromDateTimeNow(keyWord + "_results.txt");
-            string pathStr2 = Utils.CreateNameFromDateTimeNow(keyWord + "_results2.txt");
-            string pathStr3 = Utils.CreateNameFromDateTimeNow(keyWord + "_results3.xlsx"); //For writing in different sheets of the same excel file should pass only "results3.xlsx";
+            string textFileName1 = Utils.CreateNameFromDateTimeNow(keyWord + "_results.txt");
+            string textFileName2 = Utils.CreateNameFromDateTimeNow(keyWord + "_results2.txt");
+            string excelFileName = Utils.CreateNameFromDateTimeNow(keyWord + "_results3.xlsx"); //For writing in different sheets of the same excel file should pass only "results3.xlsx";
             string excellSheetName = Utils.CreateNameFromDateTimeNow(keyWord);
 
-            StreamWriter writer = new StreamWriter(@"..\..\Results\" + pathStr);
-            StreamWriter writer2 = new StreamWriter(@"..\..\Results\" + pathStr2);
-            ExcelPackage package = new ExcelPackage(new FileInfo(@"..\..\Results\" + pathStr3));
+            StreamWriter streamWriter = new StreamWriter(@"..\..\Results\" + textFileName1);
+            StreamWriter streamWriter2 = new StreamWriter(@"..\..\Results\" + textFileName2);
+            ExcelPackage excelPackage = new ExcelPackage(new FileInfo(@"..\..\Results\" + excelFileName));
 
-            using (package)
+            using (excelPackage)
             {
                 // add a new worksheet to the empty workbook
-                ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(excellSheetName);
+                ExcelWorksheet excelWorksheet = excelPackage.Workbook.Worksheets.Add(excellSheetName);
 
-                using (writer)
+                using (streamWriter)
                 {
-                    using (writer2)
+                    using (streamWriter2)
                     {
                         IWebDriver driver = StartBrowser();
 
@@ -50,8 +50,8 @@
                         }
 
                         Console.WriteLine("Total: {0}; At: {1}", totalAnnouncements, DateTime.Now.ToString());
-                        writer.WriteLine("Total: {0}; At: {1}", totalAnnouncements, DateTime.Now.ToString());
-                        writer2.WriteLine("Total: {0}; At: {1}", totalAnnouncements, DateTime.Now.ToString());
+                        streamWriter.WriteLine("Total: {0}; At: {1}", totalAnnouncements, DateTime.Now.ToString());
+                        streamWriter2.WriteLine("Total: {0}; At: {1}", totalAnnouncements, DateTime.Now.ToString());
 
                         int startingPage = 0;
                         int number = 1;
@@ -156,7 +156,7 @@
                                 driver.Url = (resultURL);
 
                                 ////TODO better typing
-                                writer2.WriteLine(String.Format("{0} | {1} | {2} | {3} | {4}",
+                                streamWriter2.WriteLine(String.Format("{0} | {1} | {2} | {3} | {4}",
                                     announcement.Date,
                                     announcement.CompanyOffer,
                                     announcement.CompanyName,
@@ -165,12 +165,12 @@
                                     ));
 
                                 ////Filling Excel cells
-                                worksheet.Cells["A" + excelRow].Value = announcement.Date;
-                                worksheet.Cells["B" + excelRow].Value = announcement.CompanyOffer;
-                                worksheet.Cells["C" + excelRow].Value = announcement.CompanyName;
-                                worksheet.Cells["D" + excelRow].Value = announcement.OfferLooks;//int.Parse(announcement.OfferLooks.Replace(" ", String.Empty));//
-                                worksheet.Cells["E" + excelRow].Value = announcement.OfferLink;
-                                worksheet.Cells["F" + excelRow].Value = fullOfferText;
+                                excelWorksheet.Cells["A" + excelRow].Value = announcement.Date;
+                                excelWorksheet.Cells["B" + excelRow].Value = announcement.CompanyOffer;
+                                excelWorksheet.Cells["C" + excelRow].Value = announcement.CompanyName;
+                                excelWorksheet.Cells["D" + excelRow].Value = announcement.OfferLooks;//int.Parse(announcement.OfferLooks.Replace(" ", String.Empty));//
+                                excelWorksheet.Cells["E" + excelRow].Value = announcement.OfferLink;
+                                excelWorksheet.Cells["F" + excelRow].Value = fullOfferText;
 
                                 excelRow++;
                             }
@@ -189,20 +189,20 @@
                             Console.WriteLine("--------------------------");
                             Console.WriteLine("Last 28 days in sector IT - Software Development and Maintenence");
                             Console.WriteLine("Containing key word \"{0}\" : {1}", keyWord, totalAnnouncements);
-                            writer.WriteLine("--------------------------");
-                            writer.WriteLine("Last 28 days in sector IT - Software Development and Maintenence");
-                            writer.WriteLine("Containing key word \"{0}\" : {1}", keyWord, totalAnnouncements);
+                            streamWriter.WriteLine("--------------------------");
+                            streamWriter.WriteLine("Last 28 days in sector IT - Software Development and Maintenence");
+                            streamWriter.WriteLine("Containing key word \"{0}\" : {1}", keyWord, totalAnnouncements);
 
                             for (int j = 0; j < textsCollection.Count; j++)
                             {
                                 if (count % 4 == 1)
                                 {
                                     Console.Write(number + " ");
-                                    writer.WriteLine(number + " ");
+                                    streamWriter.WriteLine(number + " ");
                                     number++;
                                 }
                                 Console.WriteLine(textsCollection[j]);
-                                writer.WriteLine(textsCollection[j]);
+                                streamWriter.WriteLine(textsCollection[j]);
                                 count++;
                             }
 
@@ -223,7 +223,7 @@
                         }
 
                         Console.WriteLine("Total: {0}", totalAnnouncements);
-                        writer.WriteLine("Total: {0}", totalAnnouncements);
+                        streamWriter.WriteLine("Total: {0}", totalAnnouncements);
 
                         ////TODO Find better way
                         //Whole SW sector today
@@ -239,7 +239,7 @@
                         }
 
                         Console.WriteLine("Today total: {0}", totalAnnouncements);
-                        writer.WriteLine("Today total: {0}", totalAnnouncements);
+                        streamWriter.WriteLine("Today total: {0}", totalAnnouncements);
 
                         //Key word "Czech"
                         //driver.Url = (@"https://www.jobs.bg/front_job_search.php?frompage=0&zone_id=0&is_region=0&all_cities=0&categories%5B0%5D=15&all_position_level=1&all_company_type=1&keyword=Czech&last=0#paging");
@@ -257,11 +257,11 @@
 
                         Console.WriteLine("Containing key word \"Czech\": {0}", totalAnnouncements);
                         Console.WriteLine("---------------------------");
-                        writer.WriteLine("Containing key word \"Czech\": {0}", totalAnnouncements);
-                        writer.WriteLine("---------------------------");
+                        streamWriter.WriteLine("Containing key word \"Czech\": {0}", totalAnnouncements);
+                        streamWriter.WriteLine("---------------------------");
 
                         ////Saving Excel file
-                        package.Save();
+                        excelPackage.Save();
 
                         driver.Dispose();
                         driver.Quit();

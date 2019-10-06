@@ -13,7 +13,7 @@
     {
         public static void Main()
         {
-            string keyWord = "Automation QA .NET";//"QA";//"Чешки";//"Czech";//"";//".NET Test Automation";//"Test Automation";//
+            string keyWord = "Test Automation";//"Automation QA .NET";//"Czech";//"QA";//"Чешки";//"";//".NET Test Automation";//
             int chosenCategory = 15;// 0=allCategories; 15=SW
             string textFileName1 = Utils.CreateNameFromDateTimeNow(keyWord + "_results.txt");
             string textFileName2 = Utils.CreateNameFromDateTimeNow(keyWord + "_results2.txt");
@@ -50,7 +50,7 @@
                         int number = 1;
                         int count = 0;
                         int resultsOnPage = 15;
-                        int excelRow = 2;
+                        int rowNumber = 2;
 
                         int numberOfResultPages = offersListPage.NumberOfResultPages(totalAnnouncements, resultsOnPage);
 
@@ -62,7 +62,7 @@
                             driver.Url = (resultURL);
                             offersListPage = new OffersListPage(driver);
 
-                            var currentPageRowsCollection = driver.FindElements(By.ClassName("offerslistRow"));
+                            var rows = offersListPage.Rows;
                             var currentPageJobLinksCollection = driver.FindElements(By.ClassName("joblink"));
                             var currentPageCompanyLinksCollection = driver.FindElements(By.ClassName("company_link"));
                             var currentPageOffersDatesCollection = driver.FindElements(By.ClassName("explainGray"));
@@ -74,7 +74,7 @@
                             var datesCollection = new List<string>();
 
                             // TODO refactor to method that receives collection as parameter
-                            foreach (var row in currentPageRowsCollection)
+                            foreach (var row in rows)
                             {
                                 textsCollection.Add(row.Text);
                             }
@@ -132,14 +132,14 @@
                                     ));
 
                                 ////Filling Excel cells
-                                excelWorksheet.Cells["A" + excelRow].Value = announcement.Date;
-                                excelWorksheet.Cells["B" + excelRow].Value = announcement.CompanyOffer;
-                                excelWorksheet.Cells["C" + excelRow].Value = announcement.CompanyName;
-                                excelWorksheet.Cells["D" + excelRow].Value = announcement.OfferLooks;//int.Parse(announcement.OfferLooks.Replace(" ", String.Empty));//
-                                excelWorksheet.Cells["E" + excelRow].Value = announcement.OfferLink;
-                                excelWorksheet.Cells["F" + excelRow].Value = announcement.FullOfferText;
+                                excelWorksheet.Cells["A" + rowNumber].Value = announcement.Date;
+                                excelWorksheet.Cells["B" + rowNumber].Value = announcement.CompanyOffer;
+                                excelWorksheet.Cells["C" + rowNumber].Value = announcement.CompanyName;
+                                excelWorksheet.Cells["D" + rowNumber].Value = announcement.OfferLooks;
+                                excelWorksheet.Cells["E" + rowNumber].Value = announcement.OfferLink;
+                                excelWorksheet.Cells["F" + rowNumber].Value = announcement.FullOfferText;
 
-                                excelRow++;
+                                rowNumber++;
                             }
 
                             totalAnnouncements = offersListPage.TotalNumberOfAnnouncements();
@@ -154,15 +154,18 @@
 
                             for (int j = 0; j < textsCollection.Count; j++)
                             {
-                                if (count % 4 == 1)
-                                {
-                                    Console.Write(number + " ");
-                                    streamWriter.WriteLine(number + " ");
-                                    number++;
-                                }
+                                Console.Write(number + " ");
+                                streamWriter.WriteLine(number + " ");
+                                number++;
+
                                 Console.WriteLine(textsCollection[j]);
                                 streamWriter.WriteLine(textsCollection[j]);
                                 count++;
+
+                                Console.WriteLine("-----");
+                                Console.WriteLine();
+                                streamWriter.WriteLine("-----");
+                                streamWriter.WriteLine();
                             }
 
                             startingPage += resultsOnPage;

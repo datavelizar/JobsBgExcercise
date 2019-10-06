@@ -7,5 +7,6 @@ namespace TestProgramForSeleniumWebDriver
         public string OfferLink { get; internal set; }
         public string OfferLooks { get; set; }
         public string Date { get; set; }
+        public string FullOfferText { get; set; }
     }
 }

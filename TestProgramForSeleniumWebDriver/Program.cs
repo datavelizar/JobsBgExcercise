@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Net;
     using OfficeOpenXml;
     using OpenQA.Selenium;
     using OpenQA.Selenium.Chrome;
@@ -14,8 +13,8 @@
     {
         public static void Main()
         {
-            string keyWord = ".NET Test Automation";//"Czech";//"Test Automation";//"Чешки";//"QA";//
-            int category = 0;//0=allCategories;15=SW
+            string keyWord = "Automation QA .NET";//"QA";//"Чешки";//"Czech";//"";//".NET Test Automation";//"Test Automation";//
+            int chosenCategory = 15;// 0=allCategories; 15=SW
             string textFileName1 = Utils.CreateNameFromDateTimeNow(keyWord + "_results.txt");
             string textFileName2 = Utils.CreateNameFromDateTimeNow(keyWord + "_results2.txt");
             string excelFileName = Utils.CreateNameFromDateTimeNow(keyWord + "_results3.xlsx"); //For writing in different sheets of the same excel file should pass only "results3.xlsx";
@@ -37,17 +36,11 @@
                         IWebDriver driver = StartBrowser();
 
                         ////Whole Category "IT - Sowtware"; Keyword is String.Empty, Category is 15
-                        driver.Url = ComposeURLInJobsbg("", 15, 0);
+                        driver.Url = ComposeURLInJobsbg("", chosenCategory, 0);
 
-                        //finding the total result of the category
-                        var resultsLabel = driver.FindElement(By.XPath("//*[@id=\"search_results_div\"]/table/tbody/tr/td[1]/table/tbody/tr[3]/td[1]"));
-                        var splittedResultsLabel = resultsLabel.Text.Split(' ');
-                        var totalAnnouncements = 0;
+                        OffersListPage offersListPage = new OffersListPage(driver);
 
-                        if (splittedResultsLabel.Length > 0)
-                        {
-                            totalAnnouncements = int.Parse(splittedResultsLabel[splittedResultsLabel.Length - 1]);
-                        }
+                        var totalAnnouncements = offersListPage.TotalNumberOfAnnouncements();
 
                         Console.WriteLine("Total: {0}; At: {1}", totalAnnouncements, DateTime.Now.ToString());
                         streamWriter.WriteLine("Total: {0}; At: {1}", totalAnnouncements, DateTime.Now.ToString());
@@ -59,24 +52,15 @@
                         int resultsOnPage = 15;
                         int excelRow = 2;
 
-                        for (int i = 0; i < totalAnnouncements / resultsOnPage; i++)
+                        int numberOfResultPages = offersListPage.NumberOfResultPages(totalAnnouncements, resultsOnPage);
+
+                        for (int i = 0; i < numberOfResultPages; i++)
                         {
                             //Use the already declared keyword and category (SW sector is category=15) 
-                            string resultURL = ComposeURLInJobsbg(keyWord, category, startingPage);
+                            string resultURL = ComposeURLInJobsbg(keyWord, chosenCategory, startingPage);
 
                             driver.Url = (resultURL);
-
-                            //Finding all rows with announcements and creating a collection with the title texts 
-                            try
-                            {
-                                driver.FindElements(By.ClassName("offerslistRow"));
-                                driver.FindElements(By.ClassName("joblink"));
-                                driver.FindElements(By.ClassName("company_link"));
-                            }
-                            catch (Exception)
-                            {
-                                driver.Navigate().Refresh();
-                            }
+                            offersListPage = new OffersListPage(driver);
 
                             var currentPageRowsCollection = driver.FindElements(By.ClassName("offerslistRow"));
                             var currentPageJobLinksCollection = driver.FindElements(By.ClassName("joblink"));
@@ -88,7 +72,7 @@
                             var titlesCollection = new List<string>();
                             var companyTitlesCollection = new List<string>();
                             var datesCollection = new List<string>();
-                            
+
                             // TODO refactor to method that receives collection as parameter
                             foreach (var row in currentPageRowsCollection)
                             {
@@ -118,15 +102,6 @@
                             {
                                 driver.Url = (resultURL);
 
-                                try
-                                {
-                                    driver.FindElements(By.ClassName("joblink"));
-                                }
-                                catch (Exception)
-                                {
-                                    driver.Navigate().Refresh();
-                                }
-
                                 var announcement = new Announcement();
 
                                 announcement.CompanyName = titlesCollection[m];
@@ -138,21 +113,13 @@
                                 currentPageJobLinksCollection = driver.FindElements(By.ClassName("joblink"));
                                 currentPageJobLinksCollection[m].Click();
 
-                                try
-                                {
-                                    driver.FindElement(By.Id("cnt_box"));
-                                }
-                                catch (Exception)
-                                {
-                                    driver.Navigate().Refresh();
-                                }
+                                var announcementPage = new AnnouncementPage(driver);
 
-                                var offerLooks = driver.FindElement(By.Id("cnt_box")).Text.Split(':');
-                                announcement.OfferLooks = offerLooks[offerLooks.Length - 1];
-                                // var fullOfferText = driver.FindElement(By.TagName("body")).Text;
-                                var fullOfferText = driver.FindElement(By.XPath("/html/body/table[2]/tbody/tr/td/table/tbody")).Text;
+                                announcement.OfferLooks = announcementPage.GetOfferLooks();
+                                announcement.FullOfferText = announcementPage.OfferFullText;
 
                                 offers.Add(announcement);
+
                                 driver.Url = (resultURL);
 
                                 ////TODO better typing
@@ -170,21 +137,13 @@
                                 excelWorksheet.Cells["C" + excelRow].Value = announcement.CompanyName;
                                 excelWorksheet.Cells["D" + excelRow].Value = announcement.OfferLooks;//int.Parse(announcement.OfferLooks.Replace(" ", String.Empty));//
                                 excelWorksheet.Cells["E" + excelRow].Value = announcement.OfferLink;
-                                excelWorksheet.Cells["F" + excelRow].Value = fullOfferText;
+                                excelWorksheet.Cells["F" + excelRow].Value = announcement.FullOfferText;
 
                                 excelRow++;
                             }
 
-                            //resultsLabel = driver.FindElement(By.XPath("//*[@id=\"search_results_div\"]/table/tbody/tr/td[1]/table/tbody/tr[3]/td[1]"));
-                            resultsLabel = driver.FindElement(By.CssSelector(@"#search_results_div > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(1)"));
-
-                            splittedResultsLabel = resultsLabel.Text.Split(' ');
-                            totalAnnouncements = 0;
-
-                            if (splittedResultsLabel.Length > 0)
-                            {
-                                totalAnnouncements = int.Parse(splittedResultsLabel[splittedResultsLabel.Length - 1]);
-                            }
+                            totalAnnouncements = offersListPage.TotalNumberOfAnnouncements();
+                            numberOfResultPages = offersListPage.NumberOfResultPages(totalAnnouncements);
 
                             Console.WriteLine("--------------------------");
                             Console.WriteLine("Last 28 days in sector IT - Software Development and Maintenence");
@@ -213,14 +172,7 @@
                         //Whole IT software sector
                         driver.Url = ComposeURLInJobsbg(keyWord, 15, 0);
 
-                        resultsLabel = driver.FindElement(By.XPath("//*[@id=\"search_results_div\"]/table/tbody/tr/td[1]/table/tbody/tr[3]/td[1]"));
-                        splittedResultsLabel = resultsLabel.Text.Split(' ');
-                        totalAnnouncements = 0;
-
-                        if (splittedResultsLabel.Length > 0)
-                        {
-                            totalAnnouncements = int.Parse(splittedResultsLabel[splittedResultsLabel.Length - 1]);
-                        }
+                        totalAnnouncements = offersListPage.TotalNumberOfAnnouncements();
 
                         Console.WriteLine("Total: {0}", totalAnnouncements);
                         streamWriter.WriteLine("Total: {0}", totalAnnouncements);
@@ -229,14 +181,7 @@
                         //Whole SW sector today
                         driver.Url = (@"https://www.jobs.bg/front_job_search.php?zone_id=0&is_region=0&cities%5B%5D=1&categories%5B%5D=15&all_position_level=1&all_company_type=1&keyword=&last=2");
 
-                        resultsLabel = driver.FindElement(By.XPath("//*[@id=\"search_results_div\"]/table/tbody/tr/td[1]/table/tbody/tr[3]/td[1]"));
-                        splittedResultsLabel = resultsLabel.Text.Split(' ');
-                        totalAnnouncements = 0;
-
-                        if (splittedResultsLabel.Length > 0)
-                        {
-                            totalAnnouncements = int.Parse(splittedResultsLabel[splittedResultsLabel.Length - 1]);
-                        }
+                        totalAnnouncements = offersListPage.TotalNumberOfAnnouncements();
 
                         Console.WriteLine("Today total: {0}", totalAnnouncements);
                         streamWriter.WriteLine("Today total: {0}", totalAnnouncements);
@@ -244,20 +189,16 @@
                         //Key word "Czech"
                         //driver.Url = (@"https://www.jobs.bg/front_job_search.php?frompage=0&zone_id=0&is_region=0&all_cities=0&categories%5B0%5D=15&all_position_level=1&all_company_type=1&keyword=Czech&last=0#paging");
                         //driver.Url = (@"https://www.jobs.bg/front_job_search.php?zone_id=0&is_region=0&all_cities=0&all_categories=0&all_position_level=1&all_company_type=1&keyword=Czech&last=0");
-                        driver.Url = ComposeURLInJobsbg("Czech", 0, 0);
 
-                        resultsLabel = driver.FindElement(By.XPath("//*[@id=\"search_results_div\"]/table/tbody/tr/td[1]/table/tbody/tr[3]/td[1]"));
-                        splittedResultsLabel = resultsLabel.Text.Split(' ');
-                        totalAnnouncements = 0;
+                        keyWord = "Czech";//"Automation QA .NET";//"QA";//"Чешки";//"";//".NET Test Automation";//"Test Automation";//
 
-                        if (splittedResultsLabel.Length > 0)
-                        {
-                            totalAnnouncements = int.Parse(splittedResultsLabel[splittedResultsLabel.Length - 1]);
-                        }
+                        driver.Url = ComposeURLInJobsbg(keyWord, 0, 0);
 
-                        Console.WriteLine("Containing key word \"Czech\": {0}", totalAnnouncements);
+                        totalAnnouncements = offersListPage.TotalNumberOfAnnouncements();
+
+                        Console.WriteLine("Containing key word {0}: {1}", keyWord, totalAnnouncements);
                         Console.WriteLine("---------------------------");
-                        streamWriter.WriteLine("Containing key word \"Czech\": {0}", totalAnnouncements);
+                        streamWriter.WriteLine("Containing key word {0}: {0}", keyWord, totalAnnouncements);
                         streamWriter.WriteLine("---------------------------");
 
                         ////Saving Excel file

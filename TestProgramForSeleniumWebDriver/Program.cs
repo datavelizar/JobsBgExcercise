@@ -35,10 +35,8 @@
                     using (streamWriter2)
                     {
                         IWebDriver driver = StartBrowser();
-
                         ////Whole Category "IT - Sowtware"; Keyword is String.Empty, Category is 15
                         driver.Url = ComposeURLInJobsbg("", chosenCategory, 0);
-
                         OffersListPage offersListPage = new OffersListPage(driver);
 
                         var totalAnnouncements = offersListPage.TotalNumberOfAnnouncements();
@@ -88,23 +86,27 @@
 
                             for (int m = 0; m < jobTitlesTexts.Count; m++)
                             {
+                                // TODO implement automatic page building when driver navigates
                                 driver.Url = (resultURL);
+                                offersListPage = new OffersListPage(driver);
 
-                                var announcement = new Announcement();
-
-                                announcement.CompanyName = jobTitlesTexts[m];
-                                announcement.CompanyOffer = companyLinksTexts[m];
-                                announcement.OfferLink = jobsLinksTexts[m];
-                                announcement.Date = offersDatesTexts[m];
+                                var announcement = new Announcement
+                                {
+                                    CompanyName = jobTitlesTexts[m],
+                                    CompanyOffer = companyLinksTexts[m],
+                                    OfferLink = jobsLinksTexts[m],
+                                    Date = offersDatesTexts[m]
+                                };
 
                                 //Showing the offer contents
-                                jobsLinks = driver.FindElements(By.ClassName("joblink"));
+                                //jobsLinks = driver.FindElements(By.ClassName("joblink"));
+                                jobsLinks = offersListPage.JobsLinks; // TODO check if needed for Stale Element Reference Error?
                                 jobsLinks[m].Click();
 
                                 var announcementPage = new AnnouncementPage(driver);
 
                                 announcement.OfferLooks = announcementPage.GetOfferLooks();
-                                announcement.FullOfferText = announcementPage.OfferFullText;
+                                announcement.FullOfferText = announcementPage.FullOfferText;
 
                                 offers.Add(announcement);
 
@@ -133,28 +135,43 @@
                             totalAnnouncements = offersListPage.TotalNumberOfAnnouncements();
                             numberOfResultPages = offersListPage.NumberOfResultPages(totalAnnouncements);
 
+                            // TODO extract in separate method
+                            // Printing the footer of the page for console and streamWriter1
                             Console.WriteLine("--------------------------");
                             Console.WriteLine("Last 28 days in sector IT - Software Development and Maintenence");
                             Console.WriteLine("Containing key word \"{0}\" : {1}", keyWord, totalAnnouncements);
                             streamWriter.WriteLine("--------------------------");
                             streamWriter.WriteLine("Last 28 days in sector IT - Software Development and Maintenence");
                             streamWriter.WriteLine("Containing key word \"{0}\" : {1}", keyWord, totalAnnouncements);
+                            // End of printing footer
 
+                            // TODO extract in a method
+                            // Printing the console and streamWriter1 -> results.txt
                             for (int j = 0; j < rowCollection.Count; j++)
                             {
-                                Console.Write(number + " ");
-                                streamWriter.WriteLine(number + " ");
+                                if (rowCollection[j].IndexOf("Абонирайте се за новите обяви с избраните критерии по имейл") == -1)
+                                {
+                                    Console.Write(number + " ");
+                                    streamWriter.WriteLine(number + " ");
+
+                                    Console.WriteLine(rowCollection[j]);
+                                    streamWriter.WriteLine(rowCollection[j]);
+                                    count++;
+
+                                    Console.WriteLine("-----");
+                                    Console.WriteLine();
+                                    streamWriter.WriteLine("-----");
+                                    streamWriter.WriteLine();
+
+                                }
+                                else
+                                {
+                                    number--;
+                                }
+
                                 number++;
-
-                                Console.WriteLine(rowCollection[j]);
-                                streamWriter.WriteLine(rowCollection[j]);
-                                count++;
-
-                                Console.WriteLine("-----");
-                                Console.WriteLine();
-                                streamWriter.WriteLine("-----");
-                                streamWriter.WriteLine();
                             }
+                            // End of printing the console and streamWriter1
 
                             startingPage += resultsOnPage;
                             count += resultsOnPage;
@@ -182,7 +199,6 @@
                         //driver.Url = (@"https://www.jobs.bg/front_job_search.php?zone_id=0&is_region=0&all_cities=0&all_categories=0&all_position_level=1&all_company_type=1&keyword=Czech&last=0");
 
                         keyWord = "Czech";//"Automation QA .NET";//"QA";//"Чешки";//"";//".NET Test Automation";//"Test Automation";//
-
                         driver.Url = ComposeURLInJobsbg(keyWord, 0, 0);
 
                         totalAnnouncements = offersListPage.TotalNumberOfAnnouncements();
@@ -206,7 +222,7 @@
         {
             IWebDriver driver = new ChromeDriver(); //new FirefoxDriver(); // new PhantomJSDriver();//
             driver.Manage().Window.Maximize();
-            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
             return driver;
         }
 

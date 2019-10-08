@@ -62,6 +62,7 @@
     <Compile Include="Announcement.cs" />
     <Compile Include="AnnouncementPage.cs" />
     <Compile Include="MainPage.cs" />
+    <Compile Include="OffersListPageMap.cs" />
     <Compile Include="Pages\MainPage.cs" />
     <Compile Include="Pages\MainPageMap.cs" />
     <Compile Include="Program.cs" />
@@ -79,6 +80,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="OffersListPage\" />
     <Folder Include="Results\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

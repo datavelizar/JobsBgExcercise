@@ -1,11 +1,12 @@
 ﻿using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace TestProgramForSeleniumWebDriver
 {
-    class OffersListPage
+    partial class OffersListPage
     {
         private readonly IWebDriver driver;
 
@@ -13,80 +14,6 @@ namespace TestProgramForSeleniumWebDriver
         {
             this.driver = driver;
         }
-
-        public IWebElement AnnouncementsGrid
-        {
-            get { return this.driver.FindElement(By.XPath($"(//div[@id='search_results_div']//table)[5]")); }
-        }
-
-        public IReadOnlyCollection<IWebElement> Rows
-        {
-            // get {return this.Table.FindElements(By.XPath("//tr//td[@class='offerslistRow']")); }  }
-            get { return this.AnnouncementsGrid.FindElements(By.XPath("tbody/tr")); }
-        }
-
-        public bool ValidateRow(int row)
-        {
-            bool hasAd = this.Rows.Count() == 16;
-
-            if (hasAd && row == 8)
-            {
-                return false;
-            }
-
-            return row > 0 && row <= this.Rows.Count();
-        }
-
-        public IWebElement FirstCell(int row)
-        {
-            if (this.ValidateRow(row))
-            {
-                return this.AnnouncementsGrid.FindElement(By.XPath($"//tr[{row}]//td[@class='offerslistRow']"));
-            }
-            else if (row == 8)
-            {
-                return this.AnnouncementsGrid.FindElement(By.XPath($"//tr[{row}]//td[@class='offerslistRow']"));
-            }
-            else
-            {
-                throw new ArgumentException("There is no such row on page!");
-            }
-        }
-
-        public IWebElement JobOfferLink(int row)
-        {
-            if (this.ValidateRow(row))
-            {
-                return this.AnnouncementsGrid.FindElement(By.XPath($"//tr[{row}]//td[@class='offerslistRow']/a[@class='joblink']"));
-            }
-            else if (row == 8)
-            {
-                return this.AnnouncementsGrid.FindElement(By.XPath($"//tr[{row}]//td[@class='offerslistRow']"));
-            }
-            else
-            {
-                throw new ArgumentException("There is no such row on page!");
-            }
-        }
-
-        public IWebElement CompanyLink(int row)
-        {
-            if (this.ValidateRow(row))
-            {
-                return this.AnnouncementsGrid.FindElement(By.XPath($"//tr[{row}]//td[@class='offerslistRow']/a[@class='company_link']"));
-            }
-            else if (row == 8)
-            {
-                return this.AnnouncementsGrid.FindElement(By.XPath($"//tr[{row}]//td[@class='offerslistRow']"));
-            }
-            else
-            {
-                throw new ArgumentException("There is no such row on page!");
-            }
-        }
-
-        //var resultsLabel = driver.FindElement(By.XPath("//*[@id=\"search_results_div\"]/table/tbody/tr/td[1]/table/tbody/tr[3]/td[1]"));
-        public IWebElement ResultsLabel { get { return driver.FindElement(By.XPath("//*[@id=\"search_results_div\"]/table/tbody/tr/td[1]/table/tbody/tr[3]/td[1]")); } }
 
         public int TotalNumberOfAnnouncements()
         {
@@ -113,5 +40,52 @@ namespace TestProgramForSeleniumWebDriver
             return numberOfResultPages + 1;
         }
 
+        public IList<string> GetJobsTitlesTexts() //ICollection<IWebElement> jobsLinks)
+        {
+            var jobsTitlesTexts = new List<string>();
+
+            foreach (var item in JobsLinks)// jobsLinks)
+            {
+                jobsTitlesTexts.Add(item.GetAttribute("href"));
+            }
+
+            return jobsTitlesTexts;
+        }
+
+        public IList<string> GetJobsLinksTexts()//ICollection<IWebElement> jobsLinks)
+        {
+            var jobsLinksTexts = new List<string>();
+
+            foreach (var item in JobsLinks)
+            {
+                jobsLinksTexts.Add(item.Text);
+            }
+
+            return jobsLinksTexts;
+        }
+
+        public IList<string> GetCompaniesLinksTexts()//(ReadOnlyCollection<IWebElement> companiesLinks)
+        {
+            var companiesLinksTexts = new List<string>();
+
+            foreach (var item in CompaniesLinks)
+            {
+                companiesLinksTexts.Add(item.Text);
+            }
+
+            return companiesLinksTexts;
+        }
+
+        public IList<string> GetOffersDatesTexts()//(ReadOnlyCollection<IWebElement> offersDates)
+        {
+            var offersDatesTexts = new List<string>();
+
+            foreach (var item in OffersDates)
+            {
+                offersDatesTexts.Add(item.Text);
+            }
+
+            return offersDatesTexts;
+        }
     }
 }

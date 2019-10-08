@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.IO;
     using OfficeOpenXml;
     using OpenQA.Selenium;
@@ -13,12 +14,12 @@
     {
         public static void Main()
         {
-            string keyWord = "Test Automation";//"Automation QA .NET";//"Czech";//"QA";//"Чешки";//"";//".NET Test Automation";//
+            string keyWord = ".NET Test Automation";//"Automation QA .NET";//"Test Automation";//"Czech";//"QA";//"Чешки";//"";//".NET Test Automation";//
             int chosenCategory = 15;// 0=allCategories; 15=SW
             string textFileName1 = Utils.CreateNameFromDateTimeNow(keyWord + "_results.txt");
             string textFileName2 = Utils.CreateNameFromDateTimeNow(keyWord + "_results2.txt");
             string excelFileName = Utils.CreateNameFromDateTimeNow(keyWord + "_results3.xlsx"); //For writing in different sheets of the same excel file should pass only "results3.xlsx";
-            string excellSheetName = Utils.CreateNameFromDateTimeNow(keyWord);
+            string excelSheetName = Utils.CreateNameFromDateTimeNow(keyWord);
 
             StreamWriter streamWriter = new StreamWriter(@"..\..\Results\" + textFileName1);
             StreamWriter streamWriter2 = new StreamWriter(@"..\..\Results\" + textFileName2);
@@ -27,7 +28,7 @@
             using (excelPackage)
             {
                 // add a new worksheet to the empty workbook
-                ExcelWorksheet excelWorksheet = excelPackage.Workbook.Worksheets.Add(excellSheetName);
+                ExcelWorksheet excelWorksheet = excelPackage.Workbook.Worksheets.Add(excelSheetName);
 
                 using (streamWriter)
                 {
@@ -63,55 +64,42 @@
                             offersListPage = new OffersListPage(driver);
 
                             var rows = offersListPage.Rows;
-                            var currentPageJobLinksCollection = driver.FindElements(By.ClassName("joblink"));
-                            var currentPageCompanyLinksCollection = driver.FindElements(By.ClassName("company_link"));
-                            var currentPageOffersDatesCollection = driver.FindElements(By.ClassName("explainGray"));
 
-                            var textsCollection = new List<string>();
-                            var linksCollection = new List<string>();
-                            var titlesCollection = new List<string>();
-                            var companyTitlesCollection = new List<string>();
-                            var datesCollection = new List<string>();
+                            var jobsLinks = offersListPage.JobsLinks;
+                            var jobsLinksTexts = offersListPage.GetJobsLinksTexts();
+                            var jobTitlesTexts = offersListPage.GetJobsTitlesTexts();
+
+                            var companiesLinks = offersListPage.CompaniesLinks;
+                            var companyLinksTexts = offersListPage.GetCompaniesLinksTexts();
+
+                            var offersDates = offersListPage.OffersDates;
+                            var offersDatesTexts = offersListPage.GetOffersDatesTexts();
+
+                            var rowCollection = new List<string>();
 
                             // TODO refactor to method that receives collection as parameter
                             foreach (var row in rows)
                             {
-                                textsCollection.Add(row.Text);
+                                rowCollection.Add(row.Text);
                             }
 
-                            foreach (var item in currentPageJobLinksCollection)
-                            {
-                                titlesCollection.Add(item.Text);
-                                linksCollection.Add(item.GetAttribute("href"));
-                            }
-
-                            foreach (var item in currentPageCompanyLinksCollection)
-                            {
-                                companyTitlesCollection.Add(item.Text);
-                            }
-
-                            foreach (var item in currentPageOffersDatesCollection)
-                            {
-                                datesCollection.Add(item.Text);
-                            }
-
-                            //Collection of the number of looks on each annoucement
+                            ////Collection of the number of looks on each annoucement
                             var offers = new List<Announcement>();
 
-                            for (int m = 0; m < titlesCollection.Count; m++)
+                            for (int m = 0; m < jobTitlesTexts.Count; m++)
                             {
                                 driver.Url = (resultURL);
 
                                 var announcement = new Announcement();
 
-                                announcement.CompanyName = titlesCollection[m];
-                                announcement.CompanyOffer = companyTitlesCollection[m];
-                                announcement.OfferLink = linksCollection[m];
-                                announcement.Date = datesCollection[m];
+                                announcement.CompanyName = jobTitlesTexts[m];
+                                announcement.CompanyOffer = companyLinksTexts[m];
+                                announcement.OfferLink = jobsLinksTexts[m];
+                                announcement.Date = offersDatesTexts[m];
 
                                 //Showing the offer contents
-                                currentPageJobLinksCollection = driver.FindElements(By.ClassName("joblink"));
-                                currentPageJobLinksCollection[m].Click();
+                                jobsLinks = driver.FindElements(By.ClassName("joblink"));
+                                jobsLinks[m].Click();
 
                                 var announcementPage = new AnnouncementPage(driver);
 
@@ -152,14 +140,14 @@
                             streamWriter.WriteLine("Last 28 days in sector IT - Software Development and Maintenence");
                             streamWriter.WriteLine("Containing key word \"{0}\" : {1}", keyWord, totalAnnouncements);
 
-                            for (int j = 0; j < textsCollection.Count; j++)
+                            for (int j = 0; j < rowCollection.Count; j++)
                             {
                                 Console.Write(number + " ");
                                 streamWriter.WriteLine(number + " ");
                                 number++;
 
-                                Console.WriteLine(textsCollection[j]);
-                                streamWriter.WriteLine(textsCollection[j]);
+                                Console.WriteLine(rowCollection[j]);
+                                streamWriter.WriteLine(rowCollection[j]);
                                 count++;
 
                                 Console.WriteLine("-----");
